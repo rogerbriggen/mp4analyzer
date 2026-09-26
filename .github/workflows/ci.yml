@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Runs on every push and PR — Linux is the cheap default.
+  linux:
+    name: Build & Test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v5.3.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Install ffmpeg (needed by the testdata regression tests)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: dotnet restore mp4analyzer.slnx
+      - run: dotnet build mp4analyzer.slnx -c Release --no-restore
+      - run: dotnet test mp4analyzer.slnx -c Release --no-build
+        env:
+          MP4ANALYZER_REQUIRE_FFMPEG: '1'
+      - name: Publish self-contained linux-x64
+        run: >
+          dotnet publish mp4analyzer/mp4analyzer.csproj
+          -c Release -r linux-x64 --self-contained true
+          -o publish/linux-x64
+      - name: Upload linux-x64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: mp4analyzer-linux-x64-${{ github.sha }}
+          path: publish/linux-x64
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish framework-dependent (linux apphost)
+        run: >
+          dotnet publish mp4analyzer/mp4analyzer.csproj
+          -c Release --no-self-contained
+          -o publish/portable-linux
+      - name: Upload portable-linux artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: mp4analyzer-portable-linux-${{ github.sha }}
+          path: publish/portable-linux
+          if-no-files-found: error
+          retention-days: 14
+
+  # Only on main (push/merge) — exercises Windows without paying the higher
+  # Windows-minute cost on every PR.
+  windows:
+    name: Build & Test (Windows)
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v5.3.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Install ffmpeg (needed by the testdata regression tests)
+        run: choco install ffmpeg -y --no-progress
+      - run: dotnet restore mp4analyzer.slnx
+      - run: dotnet build mp4analyzer.slnx -c Release --no-restore
+      - run: dotnet test mp4analyzer.slnx -c Release --no-build
+        env:
+          MP4ANALYZER_REQUIRE_FFMPEG: '1'
+      - name: Publish self-contained win-x64
+        run: >
+          dotnet publish mp4analyzer/mp4analyzer.csproj
+          -c Release -r win-x64 --self-contained true
+          -o publish/win-x64
+      - name: Upload win-x64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: mp4analyzer-win-x64-${{ github.sha }}
+          path: publish/win-x64
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish framework-dependent (windows apphost)
+        run: >
+          dotnet publish mp4analyzer/mp4analyzer.csproj
+          -c Release --no-self-contained
+          -o publish/portable-win
+      - name: Upload portable-win artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: mp4analyzer-portable-win-${{ github.sha }}
+          path: publish/portable-win
+          if-no-files-found: error
+          retention-days: 14
+
+  # On release/* branches (and PRs targeting them), require that version.json
+  # has had the "-pre" suffix removed before merging. Uses pwsh so the same
+  # script is portable across Windows, macOS, and Linux runners.
+  verify-release-version:
+    name: Verify release branch has no -pre tag
+    if: startsWith(github.ref, 'refs/heads/release/') || startsWith(github.base_ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check version.json has no prerelease suffix
+        shell: pwsh
+        run: |
+          $json = Get-Content version.json -Raw | ConvertFrom-Json
+          $v = $json.version
+          if ([string]::IsNullOrWhiteSpace($v)) {
+            Write-Error "version.json is missing a 'version' field."
+            exit 1
+          }
+          if ($v -match '-') {
+            Write-Error "Release branch must not have a prerelease tag in version.json. Found: '$v'. Remove the '-pre' suffix before merging."
+            exit 1
+          }
+          Write-Host "OK: version.json on release branch is '$v' (no prerelease suffix)."
