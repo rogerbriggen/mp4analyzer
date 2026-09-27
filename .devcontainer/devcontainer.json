@@ -6,6 +6,7 @@
 
   // Debian-based image with the .NET 10 SDK preinstalled (matches global.json,
   // which allows rollForward to the latest 10.0.x feature band).
+  // see https://mcr.microsoft.com/v2/devcontainers/dotnet/tags/list
   "image": "mcr.microsoft.com/devcontainers/dotnet:2-10.0-noble",
 
   "features": {
