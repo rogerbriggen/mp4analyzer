@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-dotnet@v6.0.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
       - name: Install ffmpeg (needed by the testdata regression tests)
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: dotnet restore mp4analyzer.slnx
@@ -63,7 +63,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-dotnet@v6.0.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
       - name: Install ffmpeg (needed by the testdata regression tests)
         run: choco install ffmpeg -y --no-progress
       - run: dotnet restore mp4analyzer.slnx
