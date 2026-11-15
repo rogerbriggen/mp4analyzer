@@ -16,11 +16,14 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-dotnet@v6.0.0
+      - uses: actions/setup-dotnet@v6.1.0
         with:
           dotnet-version: '11.0.x'
       - name: Install ffmpeg (needed by the testdata regression tests)
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Generate synthetic regression videos
+        shell: pwsh
+        run: ./.github/scripts/create-test-videos.ps1
       - run: dotnet restore mp4analyzer.slnx
       - run: dotnet build mp4analyzer.slnx -c Release --no-restore
       - run: dotnet test mp4analyzer.slnx -c Release --no-build
@@ -61,11 +64,14 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-dotnet@v6.0.0
+      - uses: actions/setup-dotnet@v6.1.0
         with:
           dotnet-version: '11.0.x'
       - name: Install ffmpeg (needed by the testdata regression tests)
         run: choco install ffmpeg -y --no-progress
+      - name: Generate synthetic regression videos
+        shell: pwsh
+        run: ./.github/scripts/create-test-videos.ps1
       - run: dotnet restore mp4analyzer.slnx
       - run: dotnet build mp4analyzer.slnx -c Release --no-restore
       - run: dotnet test mp4analyzer.slnx -c Release --no-build

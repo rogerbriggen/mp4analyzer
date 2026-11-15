@@ -153,6 +153,16 @@ dotnet run --project mp4analyzer -- testdata --recursive --dry-run --verbose
 **Adding a regression case:** drop the video into `testdata/movement/` or `testdata/no_movement/` —
 it is picked up automatically.
 
+Sample recordings are local files and are not committed. On a fresh checkout, generate synthetic
+regression videos with PowerShell before running the tests:
+
+```powershell
+./.github/scripts/create-test-videos.ps1
+```
+
+This creates a clock-only clip and a clip with movement outside the clock area. CI generates these
+fixtures on both platforms. The script requires ffmpeg and refuses to overwrite existing videos.
+
 When ffmpeg is missing the regression tests are reported as *inconclusive*; set
 `MP4ANALYZER_REQUIRE_FFMPEG=1` (as CI does) to make them fail instead.
 
