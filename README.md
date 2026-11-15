@@ -8,7 +8,7 @@ every second and is ignored, so a video in which only the clock ticks counts as 
 
 A **dry run** deletes nothing and only prints which videos have movement and which do not.
 
-Built on .NET 10. Videos are decoded with [ffmpeg](https://ffmpeg.org), which must be installed.
+Built on .NET 11. Videos are decoded with [ffmpeg](https://ffmpeg.org), which must be installed.
 
 ---
 
@@ -128,7 +128,7 @@ testdata/
 
 ### Prerequisites
 
-- .NET 10 SDK (pinned via `global.json`) — **or** use the dev container below, which brings
+- .NET 11 SDK (pinned via `global.json`) — **or** use the dev container below, which brings
   its own SDK.
 - ffmpeg on `PATH` (the dev container installs it).
 
@@ -153,6 +153,16 @@ dotnet run --project mp4analyzer -- testdata --recursive --dry-run --verbose
 **Adding a regression case:** drop the video into `testdata/movement/` or `testdata/no_movement/` —
 it is picked up automatically.
 
+Sample recordings are local files and are not committed. On a fresh checkout, generate synthetic
+regression videos with PowerShell before running the tests:
+
+```powershell
+./.github/scripts/create-test-videos.ps1
+```
+
+This creates a clock-only clip and a clip with movement outside the clock area. CI generates these
+fixtures on both platforms. The script requires ffmpeg and refuses to overwrite existing videos.
+
 When ffmpeg is missing the regression tests are reported as *inconclusive*; set
 `MP4ANALYZER_REQUIRE_FFMPEG=1` (as CI does) to make them fail instead.
 
@@ -165,7 +175,7 @@ so you can develop in an isolated Docker container instead of installing anythin
 [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 extension. Open the repo folder and run **“Dev Containers: Reopen in Container”**.
 
-The container is based on the official .NET 10 SDK dev-container image and adds:
+The container is based on the official .NET 11 SDK dev-container image and adds:
 
 - **Tooling:** ffmpeg, git, GitHub CLI (`gh`), Node.js LTS, PowerShell (used by the CI release check).
 - **AI CLIs:** Claude Code (`claude`), GitHub Copilot CLI (`copilot`), OpenAI Codex (`codex`).

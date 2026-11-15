@@ -1,13 +1,13 @@
-// Dev container for mp4analyzer (.NET 10 console app, uses ffmpeg to decode videos).
+// Dev container for mp4analyzer (.NET 11 console app, uses ffmpeg to decode videos).
 // Open with VS Code "Dev Containers: Reopen in Container" (requires Docker
 // and the ms-vscode-remote.remote-containers extension on the host).
 {
-  "name": "Mp4Analyzer (.NET 10)",
+  "name": "Mp4Analyzer (.NET 11)",
 
-  // Debian-based image with the .NET 10 SDK preinstalled (matches global.json,
-  // which allows rollForward to the latest 10.0.x feature band).
+  // Ubuntu-based image with the .NET 11 SDK preinstalled (matches global.json,
+  // which allows rollForward to the latest 11.0.x feature band).
   // see https://mcr.microsoft.com/v2/devcontainers/dotnet/tags/list
-  "image": "mcr.microsoft.com/devcontainers/dotnet:2-10.0-noble",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:2.3-11.0-resolute",
 
   "features": {
     // Latest git (Nerdbank.GitVersioning needs full history — clone with
